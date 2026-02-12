@@ -6,31 +6,23 @@ from django.http import Http404
 from django.template import loader
 from django.urls import reverse
 from django.db.models import F
+from django.views import generic
 
-def index(request):
-    latest_question_list=Questions.objects.order_by("-pub_date")[:5]
+class IndexView(generic.ListView):
+    template_name="polls/index.html"
+    context_object_name="latest_question_list"
+
+    def get_queryset(self):
+        return Questions.objects.order_by("pub_date")[:5]
     
-    template=loader.get_template("polls/index.html")
-    context={"latest_question_list":latest_question_list}
-    """ return HttpResponse(template.render(context,request)) """
-    return render(request,"polls/index.html",context)
+class DetailView(generic.DetailView):
+    model=Questions
+    template_name="polls/details.html"
 
+class ResultsView(generic.DetailView):
+    model = Questions
+    template_name="polls/results.html"
 
-def detail(request,question_id):
-    """ try:
-       question=Questions.objects.get(pk=question_id)
-    except Questions.DoesNotExist:
-       raise Http404("question does not exist") """
-    question=get_object_or_404(Questions, pk=question_id)
-    
-    return render(request,"polls/details.html",{"question":question})
-
-
-def results(request,question_id):
-    """     reponse="you're loking at the result of question %s."
-    return HttpResponse(reponse % question_id) """
-    question=get_object_or_404(Questions,pk=question_id)
-    return render(request,"polls/results.html",{"question":question})
 
 
 def vote(request,question_id):
